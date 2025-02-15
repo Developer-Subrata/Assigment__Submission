@@ -1,3 +1,4 @@
+// backend/middleware/authMiddleware.js
 import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
@@ -9,7 +10,7 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token.replace("Bearer ", ""), process.env.JWT_SECRET);
-    req.user = decoded; // Add user details to request object
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(401).json({ success: false, message: "Invalid Token" });

@@ -2,11 +2,10 @@
 import mongoose from "mongoose";
 
 const examSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  questions: { type: Array, required: true },
-  examCode: { type: String, unique: true, required: true },
+  subject: { type: String, required: true },
+  date: { type: Date, required: true },
+  duration: { type: Number, required: true }, // Duration in minutes
 });
 
 const Exam = mongoose.model("Exam", examSchema);
 export default Exam;
-

@@ -1,40 +1,45 @@
+// backend/routes/examRoutes.js
 import express from "express";
 import Exam from "../models/Exam.js";
 
 const router = express.Router();
 
-// Create a new exam
-router.post("/create-exam", async (req, res) => {
+// Get all exams
+router.get("/", async (req, res) => {
   try {
-    const { title, questions } = req.body;
-    
-    if (!title || !Array.isArray(questions)) {
-      return res.status(400).json({ error: "❌ Title and questions are required" });
-    }
-
-    const examCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-    const newExam = new Exam({ title, questions, examCode });
-
-    await newExam.save();
-    console.log("✅ Exam Created:", newExam);
-
-    res.json({ message: "✅ Exam created successfully", examCode });
-  } catch (error) {
-    console.error("❌ Exam Creation Error:", error);
-    res.status(500).json({ error: error.message });
+    const exams = await Exam.find();
+    res.json(exams);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Fetch an exam
-router.get("/get-exam/:examCode", async (req, res) => {
+// Create a new exam
+router.post("/create", async (req, res) => {
   try {
-    const exam = await Exam.findOne({ examCode: req.params.examCode });
-    if (!exam) return res.status(404).json({ error: "❌ Exam not found" });
+    const { subject, date, duration } = req.body;
 
-    res.json(exam);
-  } catch (error) {
-    console.error("❌ Exam Fetching Error:", error);
-    res.status(500).json({ error: error.message });
+    // Validate required fields
+    if (!subject || !date || !duration) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newExam = new Exam({ subject, date, duration });
+    await newExam.save();
+
+    res.status(201).json({ message: "Exam created successfully!", newExam });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete an exam
+router.delete("/:id", async (req, res) => {
+  try {
+    await Exam.findByIdAndDelete(req.params.id);
+    res.json({ message: "Exam deleted successfully!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

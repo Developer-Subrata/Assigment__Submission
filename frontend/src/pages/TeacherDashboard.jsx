@@ -1,175 +1,122 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
-import "bootstrap/dist/css/bootstrap.min.css";
+import "./TeacherDashboard.css";
 
 const TeacherDashboard = () => {
   const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [examTitle, setExamTitle] = useState("");
-  const [questions, setQuestions] = useState([]);
+  const [exams, setExams] = useState([]);
+  const [students, setStudents] = useState([]);
 
-  useEffect(() => {
-    fetchTasks();
+  const [showForms, setShowForms] = useState({ student: false, task: false, exam: false });
+  const [showLists, setShowLists] = useState({ student: false, task: false, exam: false });
+
+  const [newTask, setNewTask] = useState({ title: "", description: "", dueDate: "" });
+  const [newExam, setNewExam] = useState({ subject: "", date: "", duration: "" });
+  const [newStudent, setNewStudent] = useState({ name: "", email: "", mobile: "", course: "", duration: "", batch: "", rollNo: "", password: "" });
+
+  // Fetch Data on Component Mount
+  const fetchData = useCallback(async () => {
+    try {
+      const [taskRes, examRes, studentRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/tasks"),
+        axios.get("http://localhost:5000/api/exams"),
+        axios.get("http://localhost:5000/api/students"),
+      ]);
+      setTasks(taskRes.data);
+      setExams(examRes.data);
+      setStudents(studentRes.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   }, []);
 
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get("http://localhost:5000/api/tasks");
-      setTasks(res.data);
-    } catch (err) {
-      console.error("Error fetching tasks:", err);
-    }
-  };
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  const createTask = async () => {
-    if (!title.trim() || !description.trim()) {
-      alert("Please enter both title and description.");
-      return;
-    }
+  const handleChange = (e, setter) => setter(prev => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleSubmit = async (e, data, url, setter, successMessage) => {
+    e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/create-task", {
-        title,
-        description,
-        assignedBy: "Teacher",
-      });
-      alert("Task assigned successfully!");
-      setTitle("");
-      setDescription("");
-      fetchTasks(); // Fetch updated task list
+      await axios.post(url, data);
+      alert(successMessage);
+      setter(prev => Object.fromEntries(Object.keys(prev).map(key => [key, ""])));
+      fetchData();
     } catch (error) {
-      console.error("Error assigning task:", error);
-      alert("Failed to assign task.");
+      console.error("Error:", error);
+      alert("Operation failed.");
     }
   };
 
-  const addQuestion = () => {
-    setQuestions((prevQuestions) => [
-      ...prevQuestions,
-      { question: "", options: ["", "", "", ""], answer: "" },
-    ]);
-  };
-
-  const updateQuestion = (index, field, value) => {
-    setQuestions((prevQuestions) => {
-      const updatedQuestions = [...prevQuestions];
-      updatedQuestions[index][field] = value;
-      return updatedQuestions;
-    });
-  };
-
-  const updateOption = (qIndex, oIndex, value) => {
-    setQuestions((prevQuestions) => {
-      const updatedQuestions = [...prevQuestions];
-      updatedQuestions[qIndex].options[oIndex] = value;
-      return updatedQuestions;
-    });
-  };
-
-  const createExam = async () => {
-    if (!examTitle.trim() || questions.length === 0) {
-      alert("Please enter an exam title and at least one question.");
-      return;
-    }
+  const handleDelete = async (id, url, successMessage) => {
     try {
-      const res = await axios.post("http://localhost:5000/api/create-exam", {
-        title: examTitle,
-        questions,
-      });
-      alert(`Exam Created! Code: ${res.data.examCode}`);
-      setExamTitle("");
-      setQuestions([]);
+      await axios.delete(`${url}/${id}`);
+      alert(successMessage);
+      fetchData();
     } catch (error) {
-      console.error("Error creating exam:", error);
-      alert("Failed to create exam.");
+      console.error("Error deleting:", error);
+      alert("Failed to delete.");
     }
   };
+
+  const toggleSection = (type, setState) => setState(prev => ({ ...prev, [type]: !prev[type] }));
 
   return (
-    <div className="container mt-4">
-      <h2 className="text-center mb-4">Teacher Dashboard</h2>
-
-      {/* Assign Task Section */}
-      <div className="card p-4 mb-4 shadow-sm">
-        <h4>Assign Task</h4>
-        <input
-          type="text"
-          className="form-control mb-2"
-          placeholder="Title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-        <textarea
-          className="form-control mb-2"
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        ></textarea>
-        <button className="btn btn-primary" onClick={createTask}>
-          Assign Task
-        </button>
-      </div>
-
-      {/* Task List */}
-      <div className="mb-4">
-        <h4>Assigned Tasks</h4>
-        {tasks.length > 0 ? (
-          tasks.map((task) => (
-            <div key={task._id} className="border p-3 mb-2 shadow-sm">
-              <h5>{task.title}</h5>
-              <p>{task.description}</p>
-            </div>
-          ))
-        ) : (
-          <p>No tasks assigned yet.</p>
-        )}
-      </div>
-
-      {/* Create Exam Section */}
-      <div className="card p-4 shadow-sm">
-        <h4>Create Exam</h4>
-        <input
-          type="text"
-          className="form-control mb-2"
-          placeholder="Exam Title"
-          value={examTitle}
-          onChange={(e) => setExamTitle(e.target.value)}
-        />
-        {questions.map((q, index) => (
-          <div key={index} className="mb-3 p-3 border rounded shadow-sm">
-            <input
-              type="text"
-              className="form-control mb-2"
-              placeholder="Question"
-              value={q.question}
-              onChange={(e) => updateQuestion(index, "question", e.target.value)}
-            />
-            {q.options.map((opt, i) => (
-              <input
-                key={i}
-                type="text"
-                className="form-control mb-2"
-                placeholder={`Option ${i + 1}`}
-                value={opt}
-                onChange={(e) => updateOption(index, i, e.target.value)}
-              />
-            ))}
-            <input
-              type="text"
-              className="form-control mb-2"
-              placeholder="Correct Answer"
-              value={q.answer}
-              onChange={(e) => updateQuestion(index, "answer", e.target.value)}
-            />
-          </div>
-        ))}
-        <button className="btn btn-secondary me-2" onClick={addQuestion}>
-          Add Question
-        </button>
-        <button className="btn btn-success" onClick={createExam}>
-          Create Exam
-        </button>
-      </div>
+    <div className="dashboard-container">
+      <h2>Teacher Dashboard</h2>
+      
+      {[ 
+        { type: "student", title: "Add New Student", fields: newStudent, setFields: setNewStudent,
+                         url: "http://localhost:5000/api/students/add", successMessage: "Student added successfully!" },
+        { type: "task", title: "Assign a Task", fields: newTask, setFields: setNewTask,
+                         url: "http://localhost:5000/api/tasks/assign", successMessage: "Task assigned successfully!" },
+        { type: "exam", title: "Create an Exam", fields: newExam, setFields: setNewExam,
+                         url: "http://localhost:5000/api/exams/create", successMessage: "Exam created successfully!" }
+      ].map(({ type, title, fields, setFields, url, successMessage }) => (
+        <div key={type} className="form-section">
+          <h3 onClick={() => toggleSection(type, setShowForms)} style={{ cursor: "pointer" }}>
+            {title} {showForms[type] ? "▲" : "▼"}
+          </h3>
+          {showForms[type] && (
+            <form onSubmit={(e) => handleSubmit(e, fields, url, setFields, successMessage)}>
+              {Object.keys(fields).map(field => (
+                <input
+                  key={field}
+                  type={field.toLowerCase().includes("date") ? "date" : field === "password" ? "password" : "text"}
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={fields[field]}
+                  onChange={(e) => handleChange(e, setFields)}
+                  required
+                />
+              ))}
+              <button className="action-btn" type="submit">{title.split(" ")[0]}</button>
+            </form>
+          )}
+        </div>
+      ))}
+      
+      {[ 
+        { type: "student", title: "Students List", data: students, url: "http://localhost:5000/api/students", itemFormat: item => `${item.name} - ${item.course} - Batch: ${item.batch} - Roll No: ${item.rollNo}` },
+        { type: "task", title: "Assigned Tasks", data: tasks, url: "http://localhost:5000/api/tasks", itemFormat: item => `${item.title} - Due: ${item.dueDate}` },
+        { type: "exam", title: "Scheduled Exams", data: exams, url: "http://localhost:5000/api/exams", itemFormat: item => `${item.subject} - ${new Date(item.date).toLocaleDateString()} - ${item.duration} hours` }
+      ].map(({ type, title, data, url, itemFormat }) => (
+        <div key={type} className="list-section">
+          <h3 onClick={() => toggleSection(type, setShowLists)} style={{ cursor: "pointer" }}>
+            {title} {showLists[type] ? "▲" : "▼"}
+          </h3>
+          {showLists[type] && (
+            <ul>
+              {data.map(item => (
+                <li key={item._id}>{itemFormat(item)}
+                  <button className="delete-btn" onClick={() => handleDelete(item._id, url, `${title.split(" ")[0]} deleted successfully!`)}>Delete</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
     </div>
   );
 };

@@ -1,76 +1,126 @@
-// pages/StudentDashboard.jsx
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const StudentDashboard = () => {
   const [tasks, setTasks] = useState([]);
-  const [examCode, setExamCode] = useState("");
-  const [submittedText, setSubmittedText] = useState({});
-  const navigate = useNavigate();
+  const [taskId, setTaskId] = useState("");
+  const [submittedText, setSubmittedText] = useState("");
+  const [mcqExam, setMcqExam] = useState([]);
+  const [mcqResponses, setMcqResponses] = useState({});
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/tasks")
-      .then(res => setTasks(res.data))
-      .catch(err => console.error("Error fetching tasks:", err));
+    fetchTasks();
+    fetchMcqExam();
   }, []);
 
-  const submitTask = async (taskId) => {
-    if (!submittedText[taskId] || submittedText[taskId].trim() === "") {
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/tasks");
+      setTasks(res.data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
+
+  const fetchMcqExam = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/exams");
+      setMcqExam(res.data);
+    } catch (error) {
+      console.error("Error fetching exams:", error);
+    }
+  };
+
+  const handleSubmitTask = async (taskId) => {
+    if (!submittedText.trim()) {
       alert("Please enter your response before submitting.");
       return;
     }
     try {
-      await axios.post(`http://localhost:5000/api/submit-task/${taskId}`, {
-        studentName: "Student",
-        submittedText: submittedText[taskId],
+      await axios.post("http://localhost:5000/api/tasks/submit", {
+        taskId,
+        submittedText,
       });
       alert("Task submitted successfully!");
+      setSubmittedText("");
     } catch (error) {
       console.error("Error submitting task:", error);
-      alert("Failed to submit task. Please try again.");
     }
   };
 
-  const enterExam = () => {
-    if (!examCode.trim()) {
-      alert("Please enter a valid exam code.");
-      return;
+  const handleMcqResponse = (questionId, answer) => {
+    setMcqResponses((prev) => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handleSubmitExam = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/exams/submit", {
+        responses: mcqResponses,
+      });
+      alert("Exam submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting exam:", error);
     }
-    navigate(`/exam/${examCode}`);
   };
 
   return (
-    <div>
-      <h2>Student Dashboard</h2>
+    <div className="container mt-4">
+      <h2 className="text-center mb-4">Student Dashboard</h2>
 
-      <h3>Assigned Tasks</h3>
-      {tasks.length > 0 ? (
-        tasks.map(task => (
-          <div key={task._id} style={{ marginBottom: "20px", padding: "10px", border: "1px solid black" }}>
-            <h4>{task.title}</h4>
-            <p>{task.description}</p>
-            <textarea
-              placeholder="Submit your task here..."
-              value={submittedText[task._id] || ""}
-              onChange={(e) => setSubmittedText({ ...submittedText, [task._id]: e.target.value })}
-              style={{ width: "100%", height: "80px" }}
-            />
-            <button onClick={() => submitTask(task._id)} style={{ marginTop: "5px" }}>Submit Task</button>
-          </div>
-        ))
-      ) : (
-        <p>No tasks assigned yet.</p>
-      )}
+      <div className="mb-4">
+        <h4>Assignments</h4>
+        {tasks.length > 0 ? (
+          tasks.map((task) => (
+            <div key={task._id} className="card p-3 mb-2 shadow-sm">
+              <h5>{task.title}</h5>
+              <p>{task.description}</p>
+              <textarea
+                className="form-control mb-2"
+                placeholder="Your Response"
+                value={submittedText}
+                onChange={(e) => setSubmittedText(e.target.value)}
+              />
+              <button
+                className="btn btn-primary"
+                onClick={() => handleSubmitTask(task._id)}
+              >
+                Submit
+              </button>
+            </div>
+          ))
+        ) : (
+          <p>No assignments available.</p>
+        )}
+      </div>
 
-      <h3>Enter Exam</h3>
-      <input
-        type="text"
-        placeholder="Enter Exam Code"
-        value={examCode}
-        onChange={(e) => setExamCode(e.target.value)}
-      />
-      <button onClick={enterExam}>Start Exam</button>
+      <div className="card p-4 shadow-sm">
+        <h4>MCQ Exam</h4>
+        {mcqExam.length > 0 ? (
+          mcqExam.map((q, index) => (
+            <div key={index} className="p-3 mb-2">
+              <h5>{q.question}</h5>
+              {q.options.map((option, i) => (
+                <div key={i}>
+                  <input
+                    type="radio"
+                    name={q._id}
+                    value={option}
+                    onChange={() => handleMcqResponse(q._id, option)}
+                  />
+                  {" "}
+                  {option}
+                </div>
+              ))}
+            </div>
+          ))
+        ) : (
+          <p>No exams available.</p>
+        )}
+        <button className="btn btn-success mt-3" onClick={handleSubmitExam}>
+          Submit Exam
+        </button>
+      </div>
     </div>
   );
 };

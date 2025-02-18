@@ -14,16 +14,37 @@ const LoginForm = () => {
     try {
       console.log("Sending Login Request:", { email, password, role });
 
-      const response = await axios.post("http://localhost:5000/api/auth/login", { email, password, role });
+      let response;
+
+      if (role === "teacher") {
+        response = await axios.post("http://localhost:5000/api/auth/login", {
+          email,
+          password,
+          role,
+        });
+      } else if (role === "student") {
+        response = await axios.post("http://localhost:5000/api/STDauth/STDlogin", {
+          rollNo: email,
+          password,
+        });
+      } else {
+        alert("Invalid role selected!");
+        return;
+      }
+
       console.log("Full Response:", response.data);
 
       if (response.data.success) {
         alert("Login Successful!");
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("userRole", role);
-        
-        // Redirect based on user role
-        navigate(role === "teacher" ? "/teacher-dashboard" : "/student-dashboard");
+
+        // Redirect based on role
+        if (role === "teacher") {
+          navigate("/teacher-dashboard");
+        } else {
+          navigate("/student-dashboard");
+        }
       } else {
         console.warn("Login Failed:", response.data.message);
         alert(response.data.message || "Invalid Credentials");
@@ -45,7 +66,7 @@ const LoginForm = () => {
         <form onSubmit={handleLogin}>
           <div className="input-container">
             <input type="text" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            <label>Email</label>
+            <label>UserID</label>
           </div>
           <div className="input-container">
             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />

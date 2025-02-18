@@ -7,9 +7,9 @@ import User from "../models/User.js";
 const router = express.Router();
 
 router.post("/login", async (req, res) => {
-  const { email, password, role } = req.body;
+  const { emails, password, role } = req.body;
   try {
-    const user = await User.findOne({ email, role });
+    const user = await User.findOne({ emails, role });
     if (!user) return res.status(400).json({ success: false, message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);

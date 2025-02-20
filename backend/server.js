@@ -2,7 +2,6 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import nodemailer from "nodemailer";
-import twilio from "twilio";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import STDauthRoutes from "./routes/STDauthRoutes.js";
@@ -31,9 +30,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Twilio Configuration
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
 // Test API endpoint
 app.get("/", (req, res) => {
   res.send("✅ API is running...");
@@ -60,22 +56,6 @@ app.post("/api/send-email", async (req, res) => {
   } catch (error) {
     console.error("Error sending email:", error);
     res.status(500).send("Failed to send email.");
-  }
-});
-
-// Endpoint to send WhatsApp message
-app.post("/api/send-whatsapp", async (req, res) => {
-  const { mobile, message } = req.body;
-  try {
-    await twilioClient.messages.create({
-      body: message,
-      from: "whatsapp:+14155238886", // Twilio's WhatsApp sandbox number
-      to: `whatsapp:${mobile}`,
-    });
-    res.status(200).send("WhatsApp message sent successfully!");
-  } catch (error) {
-    console.error("Error sending WhatsApp message:", error);
-    res.status(500).send("Failed to send WhatsApp message.");
   }
 });
 

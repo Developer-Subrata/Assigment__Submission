@@ -1,7 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "./LoginForm.css"; // Import the updated CSS file
+import "./LoginForm.css"; // Import your CSS file
 
 const LoginForm = () => {
   const [role, setRole] = useState("teacher");
@@ -15,42 +15,36 @@ const LoginForm = () => {
       console.log("Sending Login Request:", { email, password, role });
 
       let response;
-
       if (role === "teacher") {
         response = await axios.post("http://localhost:5000/api/auth/login", {
           email,
           password,
           role,
         });
-      } else if (role === "student") {
+      } else {
         response = await axios.post("http://localhost:5000/api/STDauth/STDlogin", {
-          rollNo: email,
+          rollNo: email, // Students use rollNo instead of email
           password,
         });
-      } else {
-        alert("Invalid role selected!");
-        return;
       }
 
       console.log("Full Response:", response.data);
 
       if (response.data.success) {
         alert("Login Successful!");
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userRole", role);
 
-        // Redirect based on role
-        if (role === "teacher") {
-          navigate("/teacher-dashboard");
-        } else {
-          navigate("/student-dashboard");
-        }
+        // Store user data properly
+        localStorage.setItem("user", JSON.stringify({ token: response.data.token, role }));
+
+        // Small delay before navigation to ensure localStorage updates first
+        setTimeout(() => {
+          navigate(role === "teacher" ? "/teacher-dashboard" : "/student-dashboard");
+        }, 100);
       } else {
-        console.warn("Login Failed:", response.data.message);
         alert(response.data.message || "Invalid Credentials");
       }
     } catch (error) {
-      console.error("Login Error:", error.response ? error.response.data : error.message);
+      console.error("Login Error:", error.response?.data || error.message);
       alert(error.response?.data?.message || "Login failed. Please try again.");
     }
   };

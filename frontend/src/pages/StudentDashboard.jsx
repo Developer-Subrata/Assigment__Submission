@@ -12,11 +12,17 @@ const StudentDashboard = () => {
 
 
   const navigate = useNavigate();
+  // const handleLogout = () => {
+  //   localStorage.removeItem("authToken");
+  //   navigate("/",{ replace: true });
+  //   window.location.reload();
+  // };
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    navigate("/",{ replace: true });
-    window.location.reload();
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/");
   };
+  
   useEffect(() => {
     const rollNo = "123"; // Replace with dynamic roll number from auth or local storage
   
@@ -74,7 +80,10 @@ const StudentDashboard = () => {
             <ul>
               {assignments.map((assignment) => (
                 <li key={assignment._id}>
-                  <strong>{assignment.title}</strong> - Due: {assignment.dueDate}
+                  <strong>{assignment.title}</strong> - Due: {new Date(assignment.dueDate).toLocaleDateString("en-IN")}
+                  <br />
+                  <strong>{assignment.description}</strong>
+ 
                   <div className="assignment-actions">
                     <textarea
                       placeholder="Write your answer..."

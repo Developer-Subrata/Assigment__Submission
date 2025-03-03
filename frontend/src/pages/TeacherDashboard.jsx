@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx"; // Import the xlsx library
 import "./TeacherDashboard.css";
+import { useNavigate } from "react-router-dom";
 
 const TeacherDashboard = () => {
   const [tasks, setTasks] = useState([]);
@@ -112,10 +113,47 @@ const TeacherDashboard = () => {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
     XLSX.writeFile(workbook, "StudentsList.xlsx");
   };
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    navigate("/",{ replace: true });
+    window.location.reload();
+  };
 
   return (
     <div className="dashboard-container">
-      <h2>Teacher Dashboard</h2>       
+      <nav 
+  className="navbar" 
+  style={{ 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    padding: "10px 20px", 
+    backgroundColor: "#f8f9fa"
+  }}
+>
+  <h2 style={{ display: "flex", alignItems: "center", gap: "700px", flexWrap: "nowrap" }}>
+    Teacher Dashboard
+    <button 
+      onClick={handleLogout} 
+      style={{ 
+        backgroundColor: "#ff4d4d", 
+        color: "white", 
+        border: "none", 
+        padding: "10px 15px", 
+        fontSize: "16px", 
+        cursor: "pointer", 
+        borderRadius: "5px", 
+        transition: "background-color 0.3s ease",
+        whiteSpace: "nowrap"
+      }}
+      onMouseOver={(e) => e.target.style.backgroundColor = "#cc0000"}
+      onMouseOut={(e) => e.target.style.backgroundColor = "#ff4d4d"}
+    >
+      Logout
+    </button>
+  </h2>
+</nav>
 
       <div className="sections-container">
         <div className="form-sections">
@@ -124,7 +162,7 @@ const TeacherDashboard = () => {
                              url: "http://localhost:5000/api/students/add", successMessage: "Student added successfully!" },
             { type: "task", title: "Assign a Task", fields: newTask, setFields: setNewTask,
                              url: "http://localhost:5000/api/tasks/assign", successMessage: "Task assigned successfully!" },
-            { type: "exam", title: "Create an Exam", fields: newExam, setFields: setNewExam,
+            { type: "exam", title: "Exams", fields: newExam, setFields: setNewExam,
                              url: "http://localhost:5000/api/exams/create", successMessage: "Exam created successfully!" }
           ].map(({ type, title, fields, setFields, url, successMessage }) => (
             <div key={type} className="form-section">
@@ -168,15 +206,15 @@ const TeacherDashboard = () => {
                     <li key={item._id}>
                       {itemFormat(item)}
                       <div className="action-buttons">
-                        <button className="edit-btn" onClick={() => handleEdit(item, type)}></button>
-                        <button className="delete-btn" onClick={() => handleDelete(item._id, url, `${title.split(" ")[0]} deleted successfully!`)}></button>
+                        <button className="edit-btn" onClick={() => handleEdit(item, type)}>Edit ✍</button>
+                        <button className="delete-btn" onClick={() => handleDelete(item._id, url, `${title.split(" ")[0]} deleted successfully!`)}>Delete 🗑</button>
                       </div>
                     </li>
                   ))}
                   {/* Show Download button only for Students List */}
           {type === "student" && (
             <button onClick={downloadStudentsAsExcel} className="download-btn">
-              Download
+              <b>Download</b>
             </button>
           )}
                 </ul>

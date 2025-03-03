@@ -114,16 +114,12 @@ const TeacherDashboard = () => {
     XLSX.writeFile(workbook, "StudentsList.xlsx");
   };
   const navigate = useNavigate();
-  // const handleLogout = () => {
-  //   localStorage.removeItem("authToken");
-  //   navigate("/",{ replace: true });
-  //   window.location.reload();
-  // };
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("authToken");
+    navigate("/",{ replace: true });
+    window.location.reload();
   };
+
   
 
   return (

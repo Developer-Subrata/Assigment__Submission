@@ -12,16 +12,12 @@ const StudentDashboard = () => {
 
 
   const navigate = useNavigate();
-  // const handleLogout = () => {
-  //   localStorage.removeItem("authToken");
-  //   navigate("/",{ replace: true });
-  //   window.location.reload();
-  // };
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    navigate("/");
+    localStorage.removeItem("authToken");
+    navigate("/",{ replace: true });
+    window.location.reload();
   };
+  
   
   useEffect(() => {
     const rollNo = "123"; // Replace with dynamic roll number from auth or local storage

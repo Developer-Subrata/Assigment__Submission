@@ -16,13 +16,13 @@ const LoginForm = () => {
 
       let response;
       if (role === "teacher") {
-        response = await axios.post("https://care-x7rk.onrender.com/login", {
+        response = await axios.post("https://care-x7rk.onrender.com/api/auth/login", {
           email,
           password,
           role,
         });
       } else {
-        response = await axios.post("https://care-x7rk.onrender.com/STDlogin", {
+        response = await axios.post("https://care-x7rk.onrender.com/api/STDauth/STDlogin", {
           rollNo: email, // Students use rollNo instead of email
           password,
         });

@@ -24,9 +24,9 @@ const TeacherDashboard = () => {
   const fetchData = useCallback(async () => {
     try {
       const [taskRes, examRes, studentRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/tasks"),
-        axios.get("http://localhost:5000/api/exams"),
-        axios.get("http://localhost:5000/api/students"),
+        axios.get("https://care-x7rk.onrender.com/tasks"),
+        axios.get("https://care-x7rk.onrender.com/exams"),
+        axios.get("https://care-x7rk.onrender.com/students"),
       ]);
       setTasks(taskRes.data);
       setExams(examRes.data);
@@ -77,13 +77,13 @@ const TeacherDashboard = () => {
     try {
       let url, data;
       if (type === "task") {
-        url = `http://localhost:5000/api/tasks/${editingTask._id}`;
+        url = `https://care-x7rk.onrender.com/tasks/${editingTask._id}`;
         data = editingTask;
       } else if (type === "student") {
-        url = `http://localhost:5000/api/students/${editingStudent._id}`;
+        url = `https://care-x7rk.onrender.com/students/${editingStudent._id}`;
         data = editingStudent;
       } else if (type === "exam") {
-        url = `http://localhost:5000/api/exams/${editingExam._id}`;
+        url = `https://care-x7rk.onrender.com/exams/${editingExam._id}`;
         data = editingExam;
       }
       await axios.put(url, data);
@@ -165,11 +165,11 @@ const TeacherDashboard = () => {
         <div className="form-sections">
           {[ 
             { type: "student", title: "Add New Student", fields: newStudent, setFields: setNewStudent,
-                             url: "http://localhost:5000/api/students/add", successMessage: "Student added successfully!" },
+                             url: "https://care-x7rk.onrender.com/students/add", successMessage: "Student added successfully!" },
             { type: "task", title: "Assign a Task", fields: newTask, setFields: setNewTask,
-                             url: "http://localhost:5000/api/tasks/assign", successMessage: "Task assigned successfully!" },
+                             url: "https://care-x7rk.onrender.com/tasks/assign", successMessage: "Task assigned successfully!" },
             { type: "exam", title: "Exams", fields: newExam, setFields: setNewExam,
-                             url: "http://localhost:5000/api/exams/create", successMessage: "Exam created successfully!" }
+                             url: "https://care-x7rk.onrender.com/exams/create", successMessage: "Exam created successfully!" }
           ].map(({ type, title, fields, setFields, url, successMessage }) => (
             <div key={type} className="form-section">
               <h3 onClick={() => toggleSection(type, setShowForms)} style={{ cursor: "pointer" }}>
@@ -197,9 +197,9 @@ const TeacherDashboard = () => {
 
         <div className="list-sections">
           {[ 
-            { type: "student", title: "Students List", data: students, url: "http://localhost:5000/api/students", itemFormat: item => `${item.name} - ${item.course} - Batch: ${item.batch} - Roll No: ${item.rollNo}` },
-            { type: "task", title: "Assigned Tasks List", data: tasks, url: "http://localhost:5000/api/tasks", itemFormat: item => `${item.title} - Due: ${item.dueDate}` },
-            { type: "exam", title: "Scheduled Exams List", data: exams, url: "http://localhost:5000/api/exams", itemFormat: item => `${item.subject} - ${new Date(item.date).toLocaleDateString()} - ${item.duration} hours` }
+            { type: "student", title: "Students List", data: students, url: "https://care-x7rk.onrender.com/students", itemFormat: item => `${item.name} - ${item.course} - Batch: ${item.batch} - Roll No: ${item.rollNo}` },
+            { type: "task", title: "Assigned Tasks List", data: tasks, url: "https://care-x7rk.onrender.com/tasks", itemFormat: item => `${item.title} - Due: ${item.dueDate}` },
+            { type: "exam", title: "Scheduled Exams List", data: exams, url: "https://care-x7rk.onrender.com/exams", itemFormat: item => `${item.subject} - ${new Date(item.date).toLocaleDateString()} - ${item.duration} hours` }
           ].map(({ type, title, data, url, itemFormat }) => (
             <div key={type} className="list-section">
               <h3 onClick={() => toggleSection(type, setShowLists)} style={{ cursor: "pointer" }}>

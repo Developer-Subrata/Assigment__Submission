@@ -26,7 +26,7 @@ const StudentDashboard = () => {
   useEffect(() => {
     const rollNo = "123"; // Replace with dynamic roll number from auth or local storage
   
-    axios.get(`http://localhost:5000/api/students/${rollNo}`)
+    axios.get(`https://care-x7rk.onrender.com/students/${rollNo}`)
       .then(response => {
         console.log("Student Data:", response.data);
         setStudent(response.data);
@@ -34,12 +34,12 @@ const StudentDashboard = () => {
       .catch(error => console.error("Error fetching student data:", error));
 
     // Fetch assignments
-    axios.get("http://localhost:5000/api/tasks")
+    axios.get("https://care-x7rk.onrender.com/tasks")
       .then(response => setAssignments(response.data))
       .catch(error => console.error("Error fetching assignments:", error));
 
     // Fetch exams
-    axios.get("http://localhost:5000/api/exams")
+    axios.get("https://care-x7rk.onrender.com/exams")
       .then(response => setExams(response.data))
       .catch(error => console.error("Error fetching exams:", error));
   }, []);
